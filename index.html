@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="description"
+        content="A retro neon arcade collection with 6 classic mini-games: Snake, Pong, Breakout, Flappy, Reaction and Memory.">
+    <title>Retro Arcade Collection</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script>
+        // Polyfill for CanvasRenderingContext2D.roundRect (not in all browsers.)
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+                r = Math.min(r, w / 2, h / 2);
+                this.beginPath();
+                this.moveTo(x + r, y);
+                this.lineTo(x + w - r, y);
+                this.quadraticCurveTo(x + w, y, x + w, y + r);
+                this.lineTo(x + w, y + h - r);
+                this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                this.lineTo(x + r, y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - r);
+                this.lineTo(x, y + r);
+                this.quadraticCurveTo(x, y, x + r, y);
+                this.closePath();
+                return this;
+            };
+        }
+    </script>
+</head>
+
+<body>
+    <div id="arcade-container">
+        <!-- Scanlines overlay for retro effect -->
+        <div class="scanlines"></div>
+
+        <!-- Main Menu -->
+        <section id="main-menu" class="screen active">
+            <header>
+                <h1 class="glitch" data-text="ARCADE">ARCADE</h1>
+                <p>Select a Game</p>
+                <button id="global-mute-btn" class="icon-btn" aria-label="Toggle Mute">🔊</button>
+            </header>
+
+            <div class="game-grid">
+                <div class="game-card" data-game="snake">
+                    <img src="assets/images/snake.jpg" alt="Snake" class="card-image"
+                        onerror="this.style.display='none';">
+                    <h2>Snake</h2>
+                    <p>Classic grid-based action.</p>
+                </div>
+                <div class="game-card" data-game="pong">
+                    <img src="assets/images/pong.jpg" alt="Pong" class="card-image"
+                        onerror="this.style.display='none';">
+                    <h2>Pong</h2>
+                    <p>Defeat the AI paddle.</p>
+                </div>
+                <div class="game-card" data-game="breakout">
+                    <img src="assets/images/breakout.jpg" alt="Breakout" class="card-image"
+                        onerror="this.style.display='none';">
+                    <h2>Breakout</h2>
+                    <p>Smash the neon bricks.</p>
+                </div>
+                <div class="game-card" data-game="flappy">
+                    <img src="assets/images/flappy.jpg" alt="Flappy" class="card-image"
+                        onerror="this.style.display='none';">
+                    <h2>Flappy</h2>
+                    <p>Navigate the obstacles.</p>
+                </div>
+                <div class="game-card" data-game="reaction">
+                    <img src="assets/images/reaction.jpg" alt="Reaction" class="card-image"
+                        onerror="this.style.display='none';">
+                    <h2>Reaction</h2>
+                    <p>Test your reflexes.</p>
+                </div>
+                <div class="game-card" data-game="memory">
+                    <img src="assets/images/memory.jpg" alt="Memory" class="card-image"
+                        onerror="this.style.display='none';">
+                    <h2>Memory</h2>
+                    <p>Match the symbols.</p>
+                </div>
+            </div>
+
+            <footer>
+                <button id="reset-progress-btn" class="danger-btn">Reset All Progress</button>
+            </footer>
+        </section>
+
+        <!-- Game Screen -->
+        <section id="game-screen" class="screen">
+            <div id="hud">
+                <div class="hud-left">
+                    <button id="back-to-menu-btn" class="icon-btn" aria-label="Back to Menu">◀</button>
+                    <span id="current-game-title">GAME</span>
+                </div>
+                <div class="hud-right">
+                    <div class="score-display">
+                        <span class="label">SCORE: </span>
+                        <span id="score-val">0</span>
+                    </div>
+                    <div class="score-display">
+                        <span class="label">HI: </span>
+                        <span id="highscore-val">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="game-area">
+                <!-- Game specific canvas or DOM elements will be injected/shown here -->
+                <canvas id="game-canvas" width="800" height="600"></canvas>
+                <div id="dom-game-container"></div>
+            </div>
+
+            <!-- Overlays within Game Screen -->
+            <div id="instructions-overlay" class="overlay active">
+                <h2 id="instructions-title">Game Title</h2>
+                <p id="instructions-text">Instructions go here.</p>
+                <div class="controls-hint" id="instructions-controls">Use Arrow Keys to Move</div>
+                <button id="start-game-btn" class="primary-btn">START [SPACE]</button>
+            </div>
+
+            <div id="pause-overlay" class="overlay">
+                <h2>PAUSED</h2>
+                <button id="resume-btn" class="primary-btn">RESUME [ESC]</button>
+                <button id="restart-btn" class="secondary-btn">RESTART [R]</button>
+            </div>
+
+            <div id="game-over-overlay" class="overlay">
+                <h2 class="game-over-text">GAME OVER</h2>
+                <div class="final-score-box">
+                    <p>SCORE: <span id="final-score">0</span></p>
+                    <p id="new-highscore-msg" class="hidden glow-text">NEW HIGH SCORE!</p>
+                </div>
+                <div class="game-over-actions">
+                    <button id="play-again-btn" class="primary-btn">↩ RETRY</button>
+                    <button id="game-over-menu-btn" class="secondary-btn">⌂ MAIN MENU</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/audio.js"></script>
+    <!-- Main App Logic -->
+    <script src="js/app.js"></script>
+    <!-- Game Modules -->
+    <script src="js/games/snake.js"></script>
+    <script src="js/games/pong.js"></script>
+    <script src="js/games/breakout.js"></script>
+    <script src="js/games/flappy.js"></script>
+    <script src="js/games/reaction.js"></script>
+    <script src="js/games/memory.js"></script>
+</body>
+
+</html>
